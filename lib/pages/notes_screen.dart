@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import 'package:note_app/model/notes_model.dart';
 import 'dart:convert';
 
+import 'package:note_app/widgets/notes_data.dart';
+
 
 
 class NotesScreen extends StatefulWidget {
@@ -49,15 +51,7 @@ class _NotesScreenState extends State<NotesScreen> {
               itemCount: notes.length,
               itemBuilder: (context, index) {
                 final note = notes[index];
-                return ListTile(
-                  leading: Icon(
-                    categoryIcons[note.category],
-                    color: Colors.blue,
-                  ),
-                  title: Text(note.title),
-                  subtitle: Text(note.content),
-                  trailing: Text(formatDate(note.date)), // Display formatted date.
-                );
+               return NotesListTile(note:note);
               },
             );
           } else {

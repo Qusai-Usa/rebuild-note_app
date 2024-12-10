@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:note_app/model/notes_model.dart';
+import 'package:note_app/services/fetch_data.dart';
 import 'dart:convert';
-
 import 'package:note_app/widgets/notes_data.dart';
 
 
@@ -16,21 +16,18 @@ class NotesScreen extends StatefulWidget {
 }
 
 class _NotesScreenState extends State<NotesScreen> {
-  Future<List<NotesModel>> fetchNotes() async {
-    final response = await http.get(Uri.parse('http://3.82.233.52:5050/notes'));
-    if (response.statusCode == 200) {
-      return (jsonDecode(response.body) as List)
-          .map((json) => NotesModel.fromjson(json as Map<String, dynamic>))
-          .toList();
-    } else {
-      throw Exception("Failed to load notes");
-    }
-  }
+  // Future<List<NotesModel>> fetchNotes() async {
+  //   final response = await http.get(Uri.parse('http://3.82.233.52:5050/notes'));
+  //   if (response.statusCode == 200) {
+  //     return (jsonDecode(response.body) as List)
+  //         .map((json) => NotesModel.fromjson(json as Map<String, dynamic>))
+  //         .toList();
+  //   } else {
+  //     throw Exception("Failed to load notes");
+  //   }
+  // }
 
-  String formatDate(DateTime? date) {
-    if (date == null) return 'No Date';
-    return DateFormat('yyyy-MM-dd').format(date);
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +36,7 @@ class _NotesScreenState extends State<NotesScreen> {
         title: const Text("Notes"),
       ),
       body: FutureBuilder<List<NotesModel>>(
-        future: fetchNotes(),
+        future: ApiFetchData.fetchNotes(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());

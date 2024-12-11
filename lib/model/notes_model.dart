@@ -1,26 +1,35 @@
-
-
 import 'package:flutter/material.dart';
 
-
-
-
+/// Enum for note categories
 enum Category { sport, work, study, routine }
 
+/// Mapping of categories to their corresponding icons
 const categoryIcons = {
   Category.sport: Icons.sports_baseball,
   Category.work: Icons.work,
   Category.study: Icons.school,
   Category.routine: Icons.refresh,
 };
-class NotesModel {
-  final String id;
-  final String title;
-  final String content;
-  final DateTime? date; // Make date nullable if necessary.
-  final Category? category; // Make category nullable if necessary.
 
-  const NotesModel({
+/// NotesModel class
+class NotesModel {
+  /// Unique identifier for the note
+  String? id;
+
+  /// Title of the note
+  final String title;
+
+  /// Content of the note
+  final String content;
+
+  /// Date associated with the note
+  final DateTime? date;
+
+  /// Category of the note
+  final Category? category;
+
+  /// Constructor
+  NotesModel({
     required this.id,
     required this.title,
     required this.content,
@@ -28,20 +37,35 @@ class NotesModel {
     this.category,
   });
 
+  /// Factory constructor for creating a `NotesModel` instance from JSON
   factory NotesModel.fromjson(Map<String, dynamic> json) {
     return NotesModel(
-      id: json['id'] as String? ?? 'Unknown', // Provide a default value if null.
-      title: json['title'] as String? ?? 'No Title', // Provide a default value if null.
-      content: json['content'] as String? ?? 'No Content', // Provide a default value if null.
+      id: json['_id'] as String?, // Map MongoDB `_id` to `id`
+      title: json['title'] as String? ?? 'No Title', // Default if null
+      content: json['content'] as String? ?? 'No Content', // Default if null
       date: json['date'] != null
-          ? DateTime.tryParse(json['date'] as String) // Safely parse the date.
+          ? DateTime.tryParse(json['date'] as String) // Safely parse the date
           : null,
       category: json['category'] != null
           ? _stringToCategory(json['category'] as String)
-          : null, // Handle null category.
+          : null, // Handle null category
     );
   }
 
+  /// Method to convert a `NotesModel` instance to JSON
+  Map<String, dynamic> toJson() {
+  final data = {
+    if (id != null) '_id': id,
+    'title': title,
+    'content': content,
+    'category': category?.toString().split('.').last,
+    'date': date?.toIso8601String(),
+  };
+  print('toJson Output: $data');
+  return data;
+}
+
+  /// Helper method to convert a string to a `Category` enum
   static Category _stringToCategory(String category) {
     switch (category.toLowerCase()) {
       case 'work':

@@ -1,171 +1,146 @@
-// import 'package:flutter/material.dart';
-// import 'package:flutter_riverpod/flutter_riverpod.dart';
-// import 'package:intl/intl.dart';
-// import 'package:note_app/model/notes_model.dart';
-// import 'package:note_app/provider/notes_provider.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:note_app/model/notes_model.dart';
+import 'package:note_app/provider/notes_provider.dart';
 
-// class EditNoteModal extends ConsumerStatefulWidget {
-//   final NotesModel note;
+class UpdateNoteModal extends ConsumerStatefulWidget {
+  final NotesModel note;
 
-//   const EditNoteModal({super.key, required this.note});
+  const UpdateNoteModal({super.key, required this.note});
 
-//   @override
-//   ConsumerState<EditNoteModal> createState() => _EditNoteModalState();
-// }
+  @override
+  ConsumerState<UpdateNoteModal> createState() => _UpdateNoteModalState();
+}
 
-// class _EditNoteModalState extends ConsumerState<EditNoteModal> {
-//   final _formKey = GlobalKey<FormState>();
-//   late TextEditingController _titleControler;
-//   late TextEditingController _contentControler;
-//   late Category selectedCategory;
-//   late DateTime? pickedDate;
+class _UpdateNoteModalState extends ConsumerState<UpdateNoteModal> {
+  final _formKey = GlobalKey<FormState>();
+  late TextEditingController _titleController;
+  late TextEditingController _contentController;
+  late Category _selectedCategory;
+  DateTime? _selectedDate;
 
-//   @override
-//   void initState() {
-//     super.initState();
-//     _titleControler = TextEditingController(text: widget.note.title);
-//     _contentControler = TextEditingController(text: widget.note.content);
-//     selectedCategory = widget.note.category!;
-//     pickedDate = widget.note.date;
-//   }
+  @override
+  void initState() {
+    super.initState();
+    _titleController = TextEditingController(text: widget.note.title);
+    _contentController = TextEditingController(text: widget.note.content);
+    _selectedCategory = widget.note.category ?? Category.work;
+    _selectedDate = widget.note.date;
+  }
 
-//   @override
-//   void dispose() {
-//     _titleControler.dispose();
-//     _contentControler.dispose();
-//     super.dispose();
-//   }
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _contentController.dispose();
+    super.dispose();
+  }
 
-//   void _submitUpdatedNote() async {
-//     if (_formKey.currentState!.validate()) {
-//       final updatedNote = NotesModel(
-//         id: widget.note.id, // Keep the same ID
-//         title: _titleControler.text.trim(),
-//         content: _contentControler.text.trim(),
-//         category: selectedCategory,
-//         date: pickedDate ?? DateTime.now(),
-//       );
+  void _updateNote() async {
+  if (_formKey.currentState!.validate()) {
+    final updatedNote = NotesModel(
+      id: widget.note.id, // Keep the same ID
+      title: _titleController.text.trim(),
+      content: _contentController.text.trim(),
+      category: _selectedCategory,
+      date: _selectedDate,
+    );
 
-//       // Call the update method in the provider
-//       await ref.read(notesProvider.notifier).updateNote(updatedNote);
+    try {
+      // Call the provider's updateNote method
+      await ref.read(notesProvider.notifier).updateNote(updatedNote);
 
-//       // Close the modal and show confirmation
-//       Navigator.pop(context);
-//       ScaffoldMessenger.of(context).showSnackBar(
-//         const SnackBar(content: Text('Note updated successfully!')),
-//       );
-//     }
-//   }
+      // Pop the modal screen
+      if (!context.mounted) return; // Safety check
+      Navigator.of(context).pop(true); // Pass true to indicate success
 
-//   @override
-//   Widget build(BuildContext context) {
-//     return Padding(
-//       padding: const EdgeInsets.fromLTRB(16.0, 32, 16, 16),
-//       child: Form(
-//         key: _formKey,
-//         child: Column(
-//           crossAxisAlignment: CrossAxisAlignment.stretch,
-//           children: [
-//             const Text(
-//               "Edit Note",
-//               style: TextStyle(
-//                 fontSize: 24,
-//                 fontWeight: FontWeight.bold,
-//                 color: Colors.blueAccent,
-//               ),
-//               textAlign: TextAlign.center,
-//             ),
-//             const SizedBox(height: 24),
-//             Card(
-//               elevation: 3,
-//               child: Padding(
-//                 padding: const EdgeInsets.all(16.0),
-//                 child: Column(
-//                   children: [
-//                     TextFormField(
-//                       controller: _titleControler,
-//                       decoration: const InputDecoration(
-//                         label: Text("Title"),
-//                         prefixIcon: Icon(Icons.title),
-//                         border: OutlineInputBorder(),
-//                       ),
-//                       keyboardType: TextInputType.text,
-//                       maxLength: 30,
-//                       validator: (value) {
-//                         if (value == null || value.isEmpty) {
-//                           return 'Please enter a title';
-//                         }
-//                         return null;
-//                       },
-//                     ),
-//                     const SizedBox(height: 16),
-//                     TextFormField(
-//                       controller: _contentControler,
-//                       decoration: const InputDecoration(
-//                         label: Text("Content"),
-//                         prefixIcon: Icon(Icons.description),
-//                         border: OutlineInputBorder(),
-//                       ),
-//                       keyboardType: TextInputType.text,
-//                       maxLength: 300,
-//                       maxLines: 4,
-//                       validator: (value) {
-//                         if (value == null || value.isEmpty) {
-//                           return 'Please enter some content';
-//                         }
-//                         return null;
-//                       },
-//                     ),
-//                   ],
-//                 ),
-//               ),
-//             ),
-//             const SizedBox(height: 16),
-//             Row(
-//               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//               children: [
-//                 Expanded(
-//                   child: Text(
-//                     pickedDate == null
-//                         ? "No Date Selected"
-//                         : DateFormat('yyyy-MM-dd').format(pickedDate!),
-//                     style: const TextStyle(fontSize: 16),
-//                   ),
-//                 ),
-//                 IconButton(
-//                   onPressed: () async {
-//                     final picked = await showDatePicker(
-//                       context: context,
-//                       initialDate: pickedDate ?? DateTime.now(),
-//                       firstDate: DateTime(2000),
-//                       lastDate: DateTime(2101),
-//                     );
-//                     if (picked != null) {
-//                       setState(() {
-//                         pickedDate = picked;
-//                       });
-//                     }
-//                   },
-//                   icon: const Icon(Icons.date_range, color: Colors.blueAccent),
-//                   tooltip: "Pick a Date",
-//                 ),
-//               ],
-//             ),
-//             const SizedBox(height: 24),
-//             ElevatedButton.icon(
-//               onPressed: _submitUpdatedNote,
-//               icon: const Icon(Icons.save),
-//               label: const Text("Update Note"),
-//             ),
-//             const SizedBox(height: 12),
-//             OutlinedButton.icon(
-//               onPressed: () => Navigator.pop(context),
-//               icon: const Icon(Icons.cancel),
-//               label: const Text("Cancel"),
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
+      // Show a success SnackBar
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Note updated successfully!')),
+      );
+    } catch (e) {
+      // Show an error SnackBar
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to update note: $e')),
+      );
+    }
+  }
+}
+
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text(
+              'Edit Note',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _titleController,
+              decoration: const InputDecoration(
+                labelText: 'Title',
+                border: OutlineInputBorder(),
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter a title';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _contentController,
+              maxLines: 5,
+              decoration: const InputDecoration(
+                labelText: 'Content',
+                border: OutlineInputBorder(),
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter some content';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+            DropdownButtonFormField<Category>(
+              value: _selectedCategory,
+              decoration: const InputDecoration(
+                labelText: 'Category',
+                border: OutlineInputBorder(),
+              ),
+              items: Category.values
+                  .map((category) => DropdownMenuItem(
+                        value: category,
+                        child: Text(category.name),
+                      ))
+                  .toList(),
+              onChanged: (value) {
+                setState(() {
+                  _selectedCategory = value!;
+                });
+              },
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _updateNote,
+              child: const Text('Update Note'),
+            ),
+            OutlinedButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

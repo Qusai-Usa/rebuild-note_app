@@ -55,12 +55,12 @@ class NotesModel {
   /// Method to convert a `NotesModel` instance to JSON
   Map<String, dynamic> toJson() {
   final data = {
-    if (id != null) '_id': id,
-    'title': title,
-    'content': content,
-    'category': category?.toString().split('.').last,
-    'date': date?.toIso8601String(),
-  };
+
+  'title': title,
+  'content': content,
+  'category': category?.toString().split('.').last,
+  'date': date?.toIso8601String(),
+};
   print('toJson Output: $data');
   return data;
 }

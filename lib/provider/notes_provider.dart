@@ -45,4 +45,27 @@ class NotesNotifier extends StateNotifier<List<NotesModel>> {
       throw Exception('Failed to delete note');
     }
   }
+
+   // Update an existing note
+ Future<void> updateNote(NotesModel updatedNote) async {
+  try {
+    // Ensure the note ID is not null
+    if (updatedNote.id == null) {
+      throw Exception('Note ID cannot be null');
+    }
+
+    // Send the updated note to the API
+    await _apiService.update(updatedNote.id.toString(), updatedNote.toJson());
+
+    // Update the local state by replacing the updated note
+    state = state.map((note) => 
+      note.id == updatedNote.id ? updatedNote : note
+    ).toList();
+  } catch (e) {
+    print('Failed to update note: $e');
+    throw Exception('Failed to update note');
+  }
+}
+
+
 }
